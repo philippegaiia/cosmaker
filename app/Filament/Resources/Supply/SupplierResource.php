@@ -2,24 +2,37 @@
 
 namespace App\Filament\Resources\Supply;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use App\Filament\Resources\Supply\SupplierResource\RelationManagers\SupplierListingsRelationManager;
+use App\Filament\Resources\Supply\SupplierResource\RelationManagers\ContactsRelationManager;
+use App\Filament\Resources\Supply\SupplierResource\Pages\ListSuppliers;
+use App\Filament\Resources\Supply\SupplierResource\Pages\CreateSupplier;
+use App\Filament\Resources\Supply\SupplierResource\Pages\ViewSupplier;
+use App\Filament\Resources\Supply\SupplierResource\Pages\EditSupplier;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use App\Models\Supply\Supplier;
-use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Forms\FormsComponent;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\Split;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -30,21 +43,21 @@ class SupplierResource extends Resource
 {
     protected static ?string $model = Supplier::class;
 
-    protected static ?string $navigationGroup = 'Achats';
+    protected static string | \UnitEnum | null $navigationGroup = 'Achats';
 
     protected static ?string $navigationLabel = 'Fournisseurs';
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-office';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-building-office';
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
            // ->schema([
                 // Forms\Components\Group::make()
-                ->schema([
-                    Forms\Components\Section::make('Détails Fournisseur')
+                ->components([
+                    Section::make('Détails Fournisseur')
                         ->schema([
                             TextInput::make('name')
                                 ->label('Raison Sociale')
@@ -83,7 +96,7 @@ class SupplierResource extends Resource
                                 ->maxLength(100)
                                 ->columnSpan(2),
 
-                            Forms\Components\Toggle::make('is_active')
+                            Toggle::make('is_active')
                                 ->label('Actif')
                                 ->inline(false)
                                 ->columnSpan(2),
@@ -129,11 +142,11 @@ class SupplierResource extends Resource
 
                        // Forms\Components\Group::make()
                        //->schema([
-                        Forms\Components\Section::make('Notes')
+                        Section::make('Notes')
                             ->collapsed()
                             ->schema([
                             
-                                Forms\Components\MarkdownEditor::make('description')
+                                MarkdownEditor::make('description')
                                     ->columnSpanFull(),
                             ])->columns(6)
                           //  ])
@@ -145,52 +158,52 @@ class SupplierResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('Raison Sociale')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('address1')
+                TextColumn::make('address1')
                     ->label('Adresse')  
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                     
 
-                Tables\Columns\TextColumn::make('address2')
+                TextColumn::make('address2')
                     ->label('Complément d\'adresse')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('zipcode')
+                TextColumn::make('zipcode')
                     ->label('Code Postal')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('country')
+                TextColumn::make('country')
                     ->label('Pays')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('phone')
+                TextColumn::make('phone')
                     ->label('Téléphone')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('website')
+                TextColumn::make('website')
                     ->searchable(),
 
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->boolean()
                     ->sortable(),
            
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -198,11 +211,11 @@ class SupplierResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make()
+                EditAction::make(),
+                ViewAction::make(),
+                DeleteAction::make()
                 ->action(function ($data, $record) {
                     if ($record->contacts()->count() > 0 || $record->supplier_listings()->count() > 0) {
                         Notification::make()
@@ -227,8 +240,8 @@ class SupplierResource extends Resource
                 ])
                 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+            ->toolbarActions([
+                BulkActionGroup::make([
                    // Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
@@ -237,16 +250,16 @@ class SupplierResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\SupplierListingsRelationManager::class, 
-            RelationManagers\ContactsRelationManager::class,     
+            SupplierListingsRelationManager::class, 
+            ContactsRelationManager::class,     
         ];
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
+        return $schema
             
-               ->schema([
+               ->components([
                               
                    Section::make('Détails Fournisseur')
                     ->schema([
@@ -301,10 +314,10 @@ class SupplierResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSuppliers::route('/'),
-            'create' => Pages\CreateSupplier::route('/create'),
-            'view' => Pages\ViewSupplier::route('/{record}'),
-            'edit' => Pages\EditSupplier::route('/{record}/edit'),
+            'index' => ListSuppliers::route('/'),
+            'create' => CreateSupplier::route('/create'),
+            'view' => ViewSupplier::route('/{record}'),
+            'edit' => EditSupplier::route('/{record}/edit'),
         ];
     }
 }

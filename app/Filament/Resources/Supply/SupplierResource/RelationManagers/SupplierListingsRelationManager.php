@@ -2,13 +2,23 @@
 
 namespace App\Filament\Resources\Supply\SupplierResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Tables;
 use App\Enums\Packaging;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\Supply\Ingredient;
-use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -18,40 +28,40 @@ class SupplierListingsRelationManager extends RelationManager
     protected static string $relationship = 'supplier_listings';
 
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([Forms\Components\Select::make('ingredient_id')
+        return $schema
+            ->components([Select::make('ingredient_id')
                 ->relationship('ingredient', 'name')
                 ->options(Ingredient::all()->pluck('name', 'id'))
                 ->preload()
                 ->searchable()
                 ->required(),
-            Forms\Components\TextInput::make('name')
+            TextInput::make('name')
                 ->required()
                 ->maxLength(255),
-            Forms\Components\TextInput::make('code')
+            TextInput::make('code')
                 ->maxLength(255),
-            Forms\Components\TextInput::make('supplier_code')
+            TextInput::make('supplier_code')
                 ->maxLength(255),
-            Forms\Components\Select::make('pkg')
+            Select::make('pkg')
                 ->options(Packaging::class),
-            Forms\Components\TextInput::make('unit_weight')
+            TextInput::make('unit_weight')
                 ->numeric(),
-            Forms\Components\TextInput::make('price')
+            TextInput::make('price')
                 ->numeric()
                 ->prefix('€'),
-            Forms\Components\Toggle::make('organic')
+            Toggle::make('organic')
                 ->required(),
-            Forms\Components\Toggle::make('fairtrade')
+            Toggle::make('fairtrade')
                 ->required(),
-            Forms\Components\Toggle::make('cosmos')
+            Toggle::make('cosmos')
                 ->required(),
-            Forms\Components\Toggle::make('ecocert')
+            Toggle::make('ecocert')
                 ->required(),
-            Forms\Components\Textarea::make('description')
+            Textarea::make('description')
                 ->columnSpanFull(),
-            Forms\Components\Toggle::make('is_active')
+            Toggle::make('is_active')
                 ->required(),
             ]);
     }
@@ -61,14 +71,14 @@ class SupplierListingsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('unit_weight')
+                TextColumn::make('name'),
+                TextColumn::make('unit_weight')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('price')
+                TextColumn::make('price')
                     ->money()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('organic')
+                IconColumn::make('organic')
                     ->boolean()
                     ->sortable(),
             ])
@@ -76,18 +86,18 @@ class SupplierListingsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
 
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(),   
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),   
                 ])            
             ])
 
-            ->bulkActions([
+            ->toolbarActions([
                // Tables\Actions\BulkActionGroup::make([
                //     Tables\Actions\DeleteBulkAction::make(),
                // ]),

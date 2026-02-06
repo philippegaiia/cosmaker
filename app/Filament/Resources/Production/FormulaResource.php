@@ -2,12 +2,29 @@
 
 namespace App\Filament\Resources\Production;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Forms\Components\Repeater;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Production\FormulaResource\Pages\ListFormulas;
+use App\Filament\Resources\Production\FormulaResource\Pages\CreateFormula;
+use App\Filament\Resources\Production\FormulaResource\Pages\ViewFormula;
+use App\Filament\Resources\Production\FormulaResource\Pages\EditFormula;
 use Filament\Forms;
 use Filament\Tables;
 use App\Enums\Phases;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Models\Supply\Ingredient;
@@ -15,10 +32,7 @@ use App\Models\Production\Formula;
 use App\Models\Production\Product;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
@@ -30,18 +44,18 @@ class FormulaResource extends Resource
 {
     protected static ?string $model = Formula::class;
 
-    protected static ?string $navigationGroup = 'Produits';
+    protected static string | \UnitEnum | null $navigationGroup = 'Produits';
 
     protected static ?string $navigationLabel = 'Formules';
 
 
-    protected static ?string $navigationIcon = 'heroicon-o-beaker';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-beaker';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
         
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('Détails Formule')
                     ->schema([
                         TextInput::make('name')
@@ -93,7 +107,7 @@ Section::make()
                 ->schema([
                     Fieldset::make('Totaux')
                     ->schema([
-                            Forms\Components\Placeholder::make('total_saponified')
+                            Placeholder::make('total_saponified')
                                 ->content(function ($get)
                                 {
                                     $total = 0;
@@ -107,7 +121,7 @@ Section::make()
                                     return $total;
                                 }),
 
-                            Forms\Components\Placeholder::make('total_formula')
+                            Placeholder::make('total_formula')
                                 ->content(function ($get) {
                                     $total = 0;
                                     foreach ($get('formula_items') as $item) {
@@ -123,7 +137,7 @@ Section::make()
                             ]),
                 Section::make('Items Formule')
                     ->schema([
-                        Forms\Components\Repeater::make('formula_items')
+                        Repeater::make('formula_items')
                         ->relationship()
                             ->hiddenOn('create')
                             ->schema([
@@ -230,33 +244,33 @@ Section::make()
     {
         return $table
             ->columns([
-            Tables\Columns\TextColumn::make('name')
+            TextColumn::make('name')
                 ->label('Nom')
                 ->sortable()
                 ->searchable(),
 
-            Tables\Columns\TextColumn::make('code')
+            TextColumn::make('code')
                 ->searchable(),
 
-            Tables\Columns\ToggleColumn::make('is_active')
+            ToggleColumn::make('is_active')
                 ->label('Active')
                 ->searchable(),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
-                    Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
+                    ViewAction::make(),
+                    EditAction::make(),
                 ])
                 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -271,10 +285,10 @@ Section::make()
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFormulas::route('/'),
-            'create' => Pages\CreateFormula::route('/create'),
-            'view' => Pages\ViewFormula::route('/{record}'),
-            'edit' => Pages\EditFormula::route('/{record}/edit'),
+            'index' => ListFormulas::route('/'),
+            'create' => CreateFormula::route('/create'),
+            'view' => ViewFormula::route('/{record}'),
+            'edit' => EditFormula::route('/{record}/edit'),
         ];
     }
 

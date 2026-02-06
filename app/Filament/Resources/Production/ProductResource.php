@@ -2,9 +2,25 @@
 
 namespace App\Filament\Resources\Production;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Production\ProductResource\Pages\ListProducts;
+use App\Filament\Resources\Production\ProductResource\Pages\CreateProduct;
+use App\Filament\Resources\Production\ProductResource\Pages\EditProduct;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Models\Production\Formula;
@@ -18,27 +34,27 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static ?string $navigationGroup = 'Produits';
+    protected static string | \UnitEnum | null $navigationGroup = 'Produits';
 
     protected static ?string $navigationLabel = 'Produits';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('product_category_id')
+        return $schema
+            ->components([
+                Select::make('product_category_id')
                     ->relationship('product_category', 'name')
                     ->native(false)
                     ->required(),
                     
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('code')
+                TextInput::make('code')
                     ->maxLength(255),
-                Forms\Components\Select::make('producttags')
+                Select::make('producttags')
                     ->relationship('producttags', 'name')
                     ->preload()
                     ->multiple(),
@@ -47,21 +63,21 @@ class ProductResource extends Resource
                     ->options(Formula::all()->pluck('name', 'id'))
                     ->preload()
                     ->required(),*/
-                Forms\Components\TextInput::make('wp_code')
+                TextInput::make('wp_code')
                     ->maxLength(255),
                 
-                Forms\Components\DatePicker::make('launch_date')
+                DatePicker::make('launch_date')
                     ->native(false)    
                     ->required(),
-                Forms\Components\TextInput::make('net_weight')
+                TextInput::make('net_weight')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('ean_code')
+                TextInput::make('ean_code')
                     ->maxLength(255),
-                Forms\Components\MarkdownEditor::make('description')
+                MarkdownEditor::make('description')
                     ->maxLength(65535)
                     ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_active')
+                Toggle::make('is_active')
                     ->onColor('success')
                     ->offColor('warning')
                     ->required()
@@ -73,58 +89,58 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('product_category.name')
+                TextColumn::make('product_category.name')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('producttags.name')
+                TextColumn::make('producttags.name')
                     ->badge(),
                    // ->color('producttags.color'),
-                Tables\Columns\TextColumn::make('formulas.name')
+                TextColumn::make('formulas.name')
                 ->badge(),
                 //->color('producttags.color'),"Color: {$record->color}"
-                Tables\Columns\TextColumn::make('code')
+                TextColumn::make('code')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('wp_code')
+                TextColumn::make('wp_code')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),              
-                Tables\Columns\TextColumn::make('launch_date')
+                TextColumn::make('launch_date')
                     ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('net_weight')
+                TextColumn::make('net_weight')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('ean_code')
+                TextColumn::make('ean_code')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\ToggleColumn::make('is_active')
+                ToggleColumn::make('is_active')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -139,9 +155,9 @@ class ProductResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProducts::route('/'),
-            'create' => Pages\CreateProduct::route('/create'),
-            'edit' => Pages\EditProduct::route('/{record}/edit'),
+            'index' => ListProducts::route('/'),
+            'create' => CreateProduct::route('/create'),
+            'edit' => EditProduct::route('/{record}/edit'),
         ];
     }
 

@@ -2,11 +2,27 @@
 
 namespace App\Filament\Resources\Production;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Production\ProductionResource\Pages\ListProductions;
+use App\Filament\Resources\Production\ProductionResource\Pages\CreateProduction;
+use App\Filament\Resources\Production\ProductionResource\Pages\ViewProduction;
+use App\Filament\Resources\Production\ProductionResource\Pages\EditProduction;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Enums\ProductionStatus;
 use Filament\Resources\Resource;
@@ -26,18 +42,18 @@ class ProductionResource extends Resource
 {
     protected static ?string $model = Production::class;
 
-    protected static ?string $navigationGroup = 'Production';
+    protected static string | \UnitEnum | null $navigationGroup = 'Production';
 
     protected static ?string $navigationLabel = 'Production';
 
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('product_id')
+        return $schema
+            ->components([
+                Select::make('product_id')
                     ->relationship('product', 'name')
                     ->native(false)
                     ->searchable()
@@ -59,50 +75,50 @@ class ProductionResource extends Resource
                        // dd($formula);
                     })
                     ->required(),
-                Forms\Components\Select::make('formula_id')
+                Select::make('formula_id')
                     ->relationship('formula', 'name')
                     ->disabled()
                     ->dehydrated()
                     ->required(),
-                Forms\Components\Select::make('parent_id')
+                Select::make('parent_id')
                     ->label('Masterbatch')
                     ->relationship('parent', 'id'),
-                Forms\Components\ToggleButtons::make('is_masterbatch')
+                ToggleButtons::make('is_masterbatch')
                     ->label('Masterbatch')
                     ->inline(false)
                     ->default(false)
                     ->boolean()
                     ->grouped()
                     ->required(),
-                Forms\Components\TextInput::make('slug')
+                TextInput::make('slug')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('batch_number')
+                TextInput::make('batch_number')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\ToggleButtons::make('status')
+                ToggleButtons::make('status')
                     ->options(ProductionStatus::class)
                     ->inline()
                     ->required()
                     ->default(ProductionStatus::Planned),
-                Forms\Components\Fieldset::make('Dates')
+                Fieldset::make('Dates')
                     ->schema([
-                        Forms\Components\DatePicker::make('production_date')
+                        DatePicker::make('production_date')
                             ->required()
                             ->default(now())
                             ->native(false)
                             ->weekStartsOnMonday(),
-                        Forms\Components\DatePicker::make('ready_date')
+                        DatePicker::make('ready_date')
                             ->afterOrEqual('production_date')
                             ->native(false)
                             ->weekStartsOnMonday()
                 ])->columnSpanFull(),
-                Forms\Components\TextInput::make('quantity_ingredients')
+                TextInput::make('quantity_ingredients')
                     ->numeric(),
-                Forms\Components\TextInput::make('units_produced')
+                TextInput::make('units_produced')
                     ->numeric(),
-                Forms\Components\Toggle::make('organic')
+                Toggle::make('organic')
                     ->required(),
-                Forms\Components\Textarea::make('notes')
+                Textarea::make('notes')
                     ->columnSpanFull(),
             ]);
     }
@@ -111,62 +127,62 @@ class ProductionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('product.name')
+                TextColumn::make('product.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('formula_id')
+                TextColumn::make('formula_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('parent.id')
+                TextColumn::make('parent.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_masterbatch')
+                IconColumn::make('is_masterbatch')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('slug')
+                TextColumn::make('slug')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('batch_number')
+                TextColumn::make('batch_number')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('production_date')
+                TextColumn::make('production_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('ready_date')
+                TextColumn::make('ready_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('quantity_ingredients')
+                TextColumn::make('quantity_ingredients')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('units_produced')
+                TextColumn::make('units_produced')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('organic')
+                IconColumn::make('organic')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -181,10 +197,10 @@ class ProductionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProductions::route('/'),
-            'create' => Pages\CreateProduction::route('/create'),
-            'view' => Pages\ViewProduction::route('/{record}'),
-            'edit' => Pages\EditProduction::route('/{record}/edit'),
+            'index' => ListProductions::route('/'),
+            'create' => CreateProduction::route('/create'),
+            'view' => ViewProduction::route('/{record}'),
+            'edit' => EditProduction::route('/{record}/edit'),
         ];
     }
 

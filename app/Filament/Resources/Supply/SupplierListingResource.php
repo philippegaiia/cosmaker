@@ -2,15 +2,32 @@
 
 namespace App\Filament\Resources\Supply;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Supply\SupplierListingResource\Pages\ListSupplierListings;
+use App\Filament\Resources\Supply\SupplierListingResource\Pages\CreateSupplierListing;
+use App\Filament\Resources\Supply\SupplierListingResource\Pages\EditSupplierListing;
 use Filament\Forms;
 use Filament\Tables;
 use App\Enums\Packaging;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\Supply\Supplier;
 use Filament\Resources\Resource;
 use App\Models\Supply\Ingredient;
-use Filament\Tables\Actions\ActionGroup;
 use App\Models\Supply\SupplierListing;
 use Filament\Support\Enums\FontWeight;
 use Filament\Notifications\Notification;
@@ -23,42 +40,42 @@ class SupplierListingResource extends Resource
 {
     protected static ?string $model = SupplierListing::class;
 
-    protected static ?string $navigationGroup = 'Achats';
+    protected static string | \UnitEnum | null $navigationGroup = 'Achats';
 
     protected static ?string $navigationLabel = 'Ingrédients référencés';
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-check';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-check';
 
     protected static ?int $navigationSort = 6;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('supplier_id')
+        return $schema
+            ->components([
+                Select::make('supplier_id')
                     ->relationship('supplier', 'name')
                     ->options(Supplier::all()->pluck('name', 'id'))
                     ->preload()
                     ->searchable()
                     ->required(),
-                Forms\Components\Select::make('ingredient_id')
+                Select::make('ingredient_id')
                     ->relationship('ingredient', 'name')
                     ->options(Ingredient::all()->pluck('name', 'id'))
                     ->preload()
                     ->searchable()
                     ->required(),
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('code')
+                TextInput::make('code')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('supplier_code')
+                TextInput::make('supplier_code')
                     ->maxLength(255),
-                Forms\Components\Select::make('pkg')
+                Select::make('pkg')
                     ->options(Packaging::class),
-                Forms\Components\Select::make('pkg')
+                Select::make('pkg')
                     ->options(Packaging::class),
-                Forms\Components\Select::make('unit_of_measure')
+                Select::make('unit_of_measure')
                     ->options([
                         'kg' => 'kg',
                         'g' => 'Gramme',
@@ -67,20 +84,20 @@ class SupplierListingResource extends Resource
                         'Litre' => 'Litre',
                     ])
                     ->default('Kilo.'),
-                Forms\Components\TextInput::make('price')
+                TextInput::make('price')
                     ->numeric()
                     ->prefix('€'),
-                Forms\Components\Toggle::make('organic')
+                Toggle::make('organic')
                     ->required(),
-                Forms\Components\Toggle::make('fairtrade')
+                Toggle::make('fairtrade')
                     ->required(),
-                Forms\Components\Toggle::make('cosmos')
+                Toggle::make('cosmos')
                     ->required(),
-                Forms\Components\Toggle::make('ecocert')
+                Toggle::make('ecocert')
                     ->required(),
-                Forms\Components\Textarea::make('description')
+                Textarea::make('description')
                     ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_active')
+                Toggle::make('is_active')
                     ->required(),
             ]);
     }
@@ -92,75 +109,75 @@ class SupplierListingResource extends Resource
             //->deferLoading()
             ->columns([
 
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->label('designation')
                     ->formatStateUsing(fn ($record) => $record->name . ' ' .  $record->unit_weight . ' ' . $record->unit_of_measure)
                     ->weight(FontWeight::Bold)
                     ->searchable(['name', 'unit_of_measure']),
 
-                Tables\Columns\TextColumn::make('code')
+                TextColumn::make('code')
                     ->searchable(),
                 
-                Tables\Columns\TextColumn::make('ingredient.name')
+                TextColumn::make('ingredient.name')
                     //->numeric()
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('supplier.name')
+                TextColumn::make('supplier.name')
                     ->numeric()
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('pkg')
+                TextColumn::make('pkg')
                     ->label('Packaging')
                     ->toggleable(isToggledHiddenByDefault: true),             
 
-                Tables\Columns\TextColumn::make('unit_weight')
+                TextColumn::make('unit_weight')
                     ->label('Poids Unit.')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('price')
+                TextColumn::make('price')
                     ->label('Prix')
                     ->money('EUR')
                     ->sortable(),
-                Tables\Columns\IconColumn::make('organic')
+                IconColumn::make('organic')
                     ->label('Bio')
                     ->boolean()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('fairtrade')
+                IconColumn::make('fairtrade')
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('cosmos')
+                IconColumn::make('cosmos')
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('ecocert')
+                IconColumn::make('ecocert')
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Actif')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
+            ->recordActions([
             ActionGroup::make([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make()
+                EditAction::make(),
+                ViewAction::make(),
+                DeleteAction::make()
                 ->action(function ($data, $record) {
                     if ($record->supplies()->count() > 0 || $record->supplier_order_items()->count() > 0) {
                         Notification::make()
@@ -182,11 +199,11 @@ class SupplierListingResource extends Resource
                 }),
             ])
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -201,9 +218,9 @@ class SupplierListingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSupplierListings::route('/'),
-            'create' => Pages\CreateSupplierListing::route('/create'),
-            'edit' => Pages\EditSupplierListing::route('/{record}/edit'),
+            'index' => ListSupplierListings::route('/'),
+            'create' => CreateSupplierListing::route('/create'),
+            'edit' => EditSupplierListing::route('/{record}/edit'),
         ];
     }
 

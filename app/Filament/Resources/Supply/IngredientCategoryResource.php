@@ -2,11 +2,19 @@
 
 namespace App\Filament\Resources\Supply;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Supply\IngredientCategoryResource\Pages\ListIngredientCategories;
+use App\Filament\Resources\Supply\IngredientCategoryResource\Pages\CreateIngredientCategory;
+use App\Filament\Resources\Supply\IngredientCategoryResource\Pages\EditIngredientCategory;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Filament\Resources\Resource;
@@ -17,7 +25,6 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
 use App\Models\Supply\IngredientCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\MarkdownEditor;
@@ -29,19 +36,19 @@ class IngredientCategoryResource extends Resource
 {
     protected static ?string $model = IngredientCategory::class;
 
-    protected static ?string $navigationGroup = 'Achats';
+    protected static string | \UnitEnum | null $navigationGroup = 'Achats';
 
     protected static ?string $navigationLabel = 'Catégories Ingrédients';
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
 
     protected static ?int $navigationSort = 4;
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Select::make('parent_id')
                 ->relationship('parent', 'name', fn (Builder $query) => $query->where('parent_id', null))
                     ->native(false)
@@ -53,8 +60,7 @@ class IngredientCategoryResource extends Resource
                         }
 
                         $series = (IngredientCategory::all()->max('id') ?? 0) + 1;
-                        $prefix = now()->year;
-                        $set('code', $prefix . IngredientCategory::findOrFail($state)->code . '-' . $series + 100);
+                        $set('code', IngredientCategory::findOrFail($state)->code . '-' . $series);
                     }),              
                     
                 TextInput::make('name')
@@ -62,7 +68,7 @@ class IngredientCategoryResource extends Resource
                     ->required()
                     ->maxLength(50)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (Forms\Set $set, ?string $state) => $set('slug', str()->slug($state))), 
+                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', str()->slug($state))), 
 
                 TextInput::make('code')
                     ->required()
@@ -119,10 +125,10 @@ class IngredientCategoryResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make()->action(function ($data, $record) {
+                    EditAction::make(),
+                    DeleteAction::make()->action(function ($data, $record) {
                     if ($record->ingredients()->count() > 0 ) {
                         Notification::make()
                             ->danger()
@@ -142,9 +148,9 @@ class IngredientCategoryResource extends Resource
                     }),
                 ]),              
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -159,9 +165,9 @@ class IngredientCategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListIngredientCategories::route('/'),
-            'create' => Pages\CreateIngredientCategory::route('/create'),
-            'edit' => Pages\EditIngredientCategory::route('/{record}/edit'),
+            'index' => ListIngredientCategories::route('/'),
+            'create' => CreateIngredientCategory::route('/create'),
+            'edit' => EditIngredientCategory::route('/{record}/edit'),
         ];
     }
 }

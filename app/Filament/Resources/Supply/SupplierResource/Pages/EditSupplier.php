@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Supply\SupplierResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -16,7 +17,7 @@ class EditSupplier extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
+            DeleteAction::make()
                 ->action(function ($data, $record) {
                 if ($record->contacts()->count() > 0 || $record->supplier_listings()->count() > 0) {
                     Notification::make()

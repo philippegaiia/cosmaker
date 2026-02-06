@@ -2,11 +2,27 @@
 
 namespace App\Filament\Resources\Production;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Production\ProductionTaskTypeResource\Pages\ListProductionTaskTypes;
+use App\Filament\Resources\Production\ProductionTaskTypeResource\Pages\CreateProductionTaskType;
+use App\Filament\Resources\Production\ProductionTaskTypeResource\Pages\ViewProductionTaskType;
+use App\Filament\Resources\Production\ProductionTaskTypeResource\Pages\EditProductionTaskType;
 use App\Filament\Resources\Production\ProductionTaskTypeResource\Pages;
 use App\Filament\Resources\Production\ProductionTaskTypeResource\RelationManagers;
 use App\Models\Production\ProductionTaskType;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,29 +33,29 @@ class ProductionTaskTypeResource extends Resource
 {
     protected static ?string $model = ProductionTaskType::class;
 
-    protected static ?string $navigationGroup = 'Production';
+    protected static string | \UnitEnum | null $navigationGroup = 'Production';
 
     protected static ?string $navigationLabel = 'Types de tâches';
 
-    protected static ?string $navigationIcon = 'heroicon-o-adjustments-vertical';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-adjustments-vertical';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
+        return $schema
+            ->components([
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('slug')
+                TextInput::make('slug')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('duration')
+                TextInput::make('duration')
                     ->required()
                     ->numeric()
                     ->default(1),
-                Forms\Components\Textarea::make('description')
+                Textarea::make('description')
                     ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_active')
+                Toggle::make('is_active')
                     ->required(),
             ]);
     }
@@ -48,40 +64,40 @@ class ProductionTaskTypeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
+                TextColumn::make('slug')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('duration')
+                TextColumn::make('duration')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -96,10 +112,10 @@ class ProductionTaskTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProductionTaskTypes::route('/'),
-            'create' => Pages\CreateProductionTaskType::route('/create'),
-            'view' => Pages\ViewProductionTaskType::route('/{record}'),
-            'edit' => Pages\EditProductionTaskType::route('/{record}/edit'),
+            'index' => ListProductionTaskTypes::route('/'),
+            'create' => CreateProductionTaskType::route('/create'),
+            'view' => ViewProductionTaskType::route('/{record}'),
+            'edit' => EditProductionTaskType::route('/{record}/edit'),
         ];
     }
 

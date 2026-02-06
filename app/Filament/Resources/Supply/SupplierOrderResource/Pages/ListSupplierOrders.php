@@ -2,10 +2,11 @@
 
 namespace App\Filament\Resources\Supply\SupplierOrderResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Actions;
 use App\Enums\OrderStatus;
 use App\Models\Supply\SupplierOrder;
-use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\Supply\SupplierOrderResource;
@@ -17,7 +18,7 @@ class ListSupplierOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 

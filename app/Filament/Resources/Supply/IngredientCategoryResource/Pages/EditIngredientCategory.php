@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Supply\IngredientCategoryResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -14,7 +15,7 @@ class EditIngredientCategory extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->action(function ($data, $record) {
+            DeleteAction::make()->action(function ($data, $record) {
                 if ($record->ingredients()->count() > 0) {
                     Notification::make()
                         ->danger()

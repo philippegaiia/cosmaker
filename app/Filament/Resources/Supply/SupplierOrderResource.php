@@ -2,11 +2,23 @@
 
 namespace App\Filament\Resources\Supply;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Actions\Action;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Supply\SupplierOrderResource\Pages\ListSupplierOrders;
+use App\Filament\Resources\Supply\SupplierOrderResource\Pages\CreateSupplierOrder;
+use App\Filament\Resources\Supply\SupplierOrderResource\Pages\EditSupplierOrder;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Forms\Form;
 use App\Enums\OrderStatus;
 use Filament\Tables\Table;
 use App\Models\Supply\Supply;
@@ -15,8 +27,6 @@ use Filament\Resources\Resource;
 use App\Models\Supply\SupplierOrder;
 use Filament\Forms\Components\Select;
 use App\Models\Supply\SupplierListing;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Repeater;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Supply\SupplierOrderItem;
@@ -28,7 +38,6 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Forms\Components\ToggleButtons;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\MarkdownEditor;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\Supply\SupplierOrderResource\Pages;
@@ -37,18 +46,18 @@ class SupplierOrderResource extends Resource
 {
     protected static ?string $model = SupplierOrder::class;
 
-    protected static ?string $navigationGroup = 'Achats';
+    protected static string | \UnitEnum | null $navigationGroup = 'Achats';
 
     protected static ?string $navigationLabel = 'Commandes fournisseurs';
 
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shopping-cart';
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form           
-            ->schema([
+        return $schema           
+            ->components([
                 Section::make('Détails Commande')
                     ->schema([
                         Select::make('supplier_id')                         
@@ -59,7 +68,7 @@ class SupplierOrderResource extends Resource
                                 $prefix = now()->year;  
                                 $supplierCode = Supplier::findOrFail($state)->code;
                                 $serie = $get('serial_number');
-                                                                
+
                                 $set('order_ref', $prefix.'-'.$supplierCode.'-'.$serie);
                             })
                             ->native(false)
@@ -84,7 +93,7 @@ class SupplierOrderResource extends Resource
                             ->maxLength(255)
                             ->disabled()
                             ->dehydrated(),
-                                        
+
                         ToggleButtons::make('order_status')
                             ->options(OrderStatus::class)
                             ->inline()
@@ -104,7 +113,7 @@ class SupplierOrderResource extends Resource
                                     ->native(false)
                                     ->weekStartsOnMonday()
                             ])->columnSpanFull(),                       
-                        
+
                         Fieldset::make('Documents')
                             ->schema([
                                 TextInput::make('confirmation_number')
@@ -117,7 +126,7 @@ class SupplierOrderResource extends Resource
                                     ->maxLength(50)
                                     ->columnSpan(1),
                             ])->columns(3),
-                                            
+
                         TextInput::make('freight_cost')
                             ->numeric(),
 
@@ -128,13 +137,13 @@ class SupplierOrderResource extends Resource
                             ])
                             ->collapsed()
                             ->columnSpanFull()
-                
+
                 ])->columns(4),
                             //  ]);
 
                 Section::make('Items Commande')
                     ->schema([           
-                    Forms\Components\Repeater::make('supplier_order_items')
+                    Repeater::make('supplier_order_items')
                         ->relationship()
                         ->hiddenOn('create')
                         ->schema([
@@ -232,7 +241,7 @@ class SupplierOrderResource extends Resource
                                     )
                                     ->icon('heroicon-m-arrow-trending-up')
                                     ->requiresConfirmation()
-                                    
+
                                 // ->after(function ($livewire) {
                                 //      $livewire->dispatch('refreshIsInSupplies');
                                 //  })
@@ -281,7 +290,7 @@ class SupplierOrderResource extends Resource
                                             Notification::make()
                                                 ->title('Entrée en Stock mise à jour de' . $isInSupplies->supplier_listing->name)
                                                 ->success()
-                                
+
                                                 ->send();
                                             //dd($component->getRawItemState($arguments['item'])['is_in_supplies']); 
                                             //dd($state['record-16']['is_in_supplies']);
@@ -299,82 +308,82 @@ class SupplierOrderResource extends Resource
                                     })
                                     //successRedirectUrl(SupplierOrderResource::getUrl())
                                         //])                         
-                                               
+
                                 ])->columnSpanFull()
                             ])
             ]);
-                            
+
         }
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('supplier.name')
+                TextColumn::make('supplier.name')
                     ->label('Fournisseur')
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('order_status')
+                TextColumn::make('order_status')
                     ->label('Statut')
                     ->badge()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('order_ref')
+                TextColumn::make('order_ref')
                     ->label('Référence')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('order_date')
+                TextColumn::make('order_date')
                     ->label('Date Commande')
                     ->date()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('delivery_date')
+                TextColumn::make('delivery_date')
                     ->label('Date Livraison')
                     ->date()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('confirmation_number')
+                TextColumn::make('confirmation_number')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('invoice_number')
+                TextColumn::make('invoice_number')
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('bl_number')
+                TextColumn::make('bl_number')
                     ->searchable()
                      ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('freight_cost')
+                TextColumn::make('freight_cost')
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                    
-                Tables\Columns\TextColumn::make('updated_at')
+
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-               Tables\Filters\TrashedFilter::make(),
+               TrashedFilter::make(),
             ])
 
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
 
-            ->bulkActions([
-               Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+               BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -389,9 +398,9 @@ class SupplierOrderResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSupplierOrders::route('/'),
-            'create' => Pages\CreateSupplierOrder::route('/create'),
-            'edit' => Pages\EditSupplierOrder::route('/{record}/edit'),
+            'index' => ListSupplierOrders::route('/'),
+            'create' => CreateSupplierOrder::route('/create'),
+            'edit' => EditSupplierOrder::route('/{record}/edit'),
         ];
     }
 

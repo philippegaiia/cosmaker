@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Supply\SupplierContactResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\Supply\SupplierContactResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -17,7 +18,7 @@ class EditSupplierContact extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

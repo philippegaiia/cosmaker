@@ -29,7 +29,7 @@ class Formula extends Model
 
    /*  protected function total()
     {
-        
+
                 $total = 0;
 
                 foreach ($this->quoteProducts as $product) {
@@ -37,8 +37,8 @@ class Formula extends Model
                 }
 
                 return $total;
-            
-        
+
+
     }
 
    protected function subtotal(): Attribute

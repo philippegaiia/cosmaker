@@ -2,9 +2,17 @@
 
 namespace App\Filament\Resources\Production;
 
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Production\ProducttagResource\Pages\ListProducttags;
+use App\Filament\Resources\Production\ProducttagResource\Pages\CreateProducttag;
+use App\Filament\Resources\Production\ProducttagResource\Pages\EditProducttag;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Models\Production\Producttag;
@@ -19,16 +27,16 @@ use App\Filament\Resources\Production\ProducttagResource\RelationManagers;
 class ProducttagResource extends Resource
 {
     protected static ?string $model = Producttag::class;
-    protected static ?string $navigationGroup = 'Produits';
+    protected static string | \UnitEnum | null $navigationGroup = 'Produits';
 
     protected static ?string $navigationLabel = 'Tags';
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
             TextInput::make('name')->required()->maxlength(255),
             ColorPicker::make('color'),
             
@@ -39,14 +47,14 @@ class ProducttagResource extends Resource
     {
         return $table
             ->columns([
-            Tables\Columns\TextColumn::make('name')
+            TextColumn::make('name')
             ->searchable(),
-            Tables\Columns\ColorColumn::make('color'),
-            Tables\Columns\TextColumn::make('created_at')
+            ColorColumn::make('color'),
+            TextColumn::make('created_at')
                 ->dateTime()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
-            Tables\Columns\TextColumn::make('updated_at')
+            TextColumn::make('updated_at')
                 ->dateTime()
                 ->sortable()
                 ->toggleable(isToggledHiddenByDefault: true),
@@ -54,12 +62,12 @@ class ProducttagResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -74,9 +82,9 @@ class ProducttagResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProducttags::route('/'),
-            'create' => Pages\CreateProducttag::route('/create'),
-            'edit' => Pages\EditProducttag::route('/{record}/edit'),
+            'index' => ListProducttags::route('/'),
+            'create' => CreateProducttag::route('/create'),
+            'edit' => EditProducttag::route('/{record}/edit'),
         ];
     }
 }

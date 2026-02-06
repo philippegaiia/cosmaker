@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\Supply\SupplierOrderResource\Pages;
 
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
@@ -14,7 +17,7 @@ class EditSupplierOrder extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->action(function ($data, $record) {
+            DeleteAction::make()->action(function ($data, $record) {
                 if ($record->supplier_order_items()->count() > 0) {
                     Notification::make()
                         ->danger()
@@ -33,8 +36,8 @@ class EditSupplierOrder extends EditRecord
 
                 $record->delete();
             }),
-            Actions\ForceDeleteAction::make(),
-            Actions\RestoreAction::make(),
+            ForceDeleteAction::make(),
+            RestoreAction::make(),
         ];
     }
 }

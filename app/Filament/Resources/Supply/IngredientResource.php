@@ -2,13 +2,26 @@
 
 namespace App\Filament\Resources\Supply;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Supply\IngredientResource\Pages\ListIngredients;
+use App\Filament\Resources\Supply\IngredientResource\Pages\CreateIngredient;
+use App\Filament\Resources\Supply\IngredientResource\Pages\EditIngredient;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Models\Supply\Ingredient;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -19,47 +32,47 @@ class IngredientResource extends Resource
 {
     protected static ?string $model = Ingredient::class;
 
-    protected static ?string $navigationGroup = 'Achats';
+    protected static string | \UnitEnum | null $navigationGroup = 'Achats';
 
     protected static ?string $navigationLabel = 'Ingrédients';
 
-    protected static ?string $navigationIcon = 'heroicon-m-square-3-stack-3d';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-m-square-3-stack-3d';
 
     protected static ?int $navigationSort = 3;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('ingredient_category_id')
+        return $schema
+            ->components([
+                Select::make('ingredient_category_id')
                     ->relationship('ingredient_category', 'name')
                     ->native(false)
                     ->required(),
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('code')
+                TextInput::make('code')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('slug')
+                TextInput::make('slug')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('name_en')
+                TextInput::make('name_en')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('inci')
+                TextInput::make('inci')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('inci_naoh')
+                TextInput::make('inci_naoh')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('inci_koh')
+                TextInput::make('inci_koh')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('cas')
+                TextInput::make('cas')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('cas_einecs')
+                TextInput::make('cas_einecs')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('einecs')
+                TextInput::make('einecs')
                     ->maxLength(255),
-                Forms\Components\Toggle::make('is_active')
+                Toggle::make('is_active')
                     ->required(),
-                Forms\Components\Textarea::make('description')
+                Textarea::make('description')
                     ->columnSpanFull(),
             ]);
     }
@@ -68,40 +81,40 @@ class IngredientResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('ingredient_category.name')
+                TextColumn::make('ingredient_category.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('code')
+                TextColumn::make('code')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('slug')
+                TextColumn::make('slug')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('name_en')
+                TextColumn::make('name_en')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('inci')
+                TextColumn::make('inci')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('inci_naoh')
+                TextColumn::make('inci_naoh')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('inci_koh')
+                TextColumn::make('inci_koh')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('cas')
+                TextColumn::make('cas')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('cas_einecs')
+                TextColumn::make('cas_einecs')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('einecs')
+                TextColumn::make('einecs')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -109,10 +122,10 @@ class IngredientResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
             ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make()->action(function ($data, $record) {
+                    EditAction::make(),
+                    DeleteAction::make()->action(function ($data, $record) {
                     if ($record->supplier_listings()->count() > 0) {
                         Notification::make()
                             ->danger()
@@ -134,9 +147,9 @@ class IngredientResource extends Resource
             ]),
                 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -151,9 +164,9 @@ class IngredientResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListIngredients::route('/'),
-            'create' => Pages\CreateIngredient::route('/create'),
-            'edit' => Pages\EditIngredient::route('/{record}/edit'),
+            'index' => ListIngredients::route('/'),
+            'create' => CreateIngredient::route('/create'),
+            'edit' => EditIngredient::route('/{record}/edit'),
         ];
     }
 }

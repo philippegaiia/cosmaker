@@ -2,11 +2,28 @@
 
 namespace App\Filament\Resources\Production;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\ViewAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\Production\ProductionTaskResource\Pages\ListProductionTasks;
+use App\Filament\Resources\Production\ProductionTaskResource\Pages\CreateProductionTask;
+use App\Filament\Resources\Production\ProductionTaskResource\Pages\ViewProductionTask;
+use App\Filament\Resources\Production\ProductionTaskResource\Pages\EditProductionTask;
 use App\Filament\Resources\Production\ProductionTaskResource\Pages;
 use App\Filament\Resources\Production\ProductionTaskResource\RelationManagers;
 use App\Models\Production\ProductionTask;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,31 +34,31 @@ class ProductionTaskResource extends Resource
 {
     protected static ?string $model = ProductionTask::class;
 
-    protected static ?string $navigationGroup = 'Production';
+    protected static string | \UnitEnum | null $navigationGroup = 'Production';
 
     protected static ?string $navigationLabel = 'Tâches';
 
 
-    protected static ?string $navigationIcon = 'heroicon-c-check';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-c-check';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('production_id')
+        return $schema
+            ->components([
+                TextInput::make('production_id')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('production_task_type_id')
+                TextInput::make('production_task_type_id')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('slug')
+                TextInput::make('slug')
                     ->maxLength(255),
-                Forms\Components\DatePicker::make('date')
+                DatePicker::make('date')
                     ->required(),
-                Forms\Components\Textarea::make('notes')
+                Textarea::make('notes')
                     ->maxLength(16777215)
                     ->columnSpanFull(),
-                Forms\Components\Toggle::make('is_finished')
+                Toggle::make('is_finished')
                     ->required(),
             ]);
     }
@@ -50,40 +67,40 @@ class ProductionTaskResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('production_id')
+                TextColumn::make('production_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('production_task_type_id')
+                TextColumn::make('production_task_type_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('slug')
+                TextColumn::make('slug')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('date')
+                TextColumn::make('date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_finished')
+                IconColumn::make('is_finished')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -98,10 +115,10 @@ class ProductionTaskResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProductionTasks::route('/'),
-            'create' => Pages\CreateProductionTask::route('/create'),
-            'view' => Pages\ViewProductionTask::route('/{record}'),
-            'edit' => Pages\EditProductionTask::route('/{record}/edit'),
+            'index' => ListProductionTasks::route('/'),
+            'create' => CreateProductionTask::route('/create'),
+            'view' => ViewProductionTask::route('/{record}'),
+            'edit' => EditProductionTask::route('/{record}/edit'),
         ];
     }
 

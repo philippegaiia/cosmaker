@@ -2,13 +2,22 @@
 
 namespace App\Filament\Resources\Supply\SupplierResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\MarkDownEditor;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Form;
 use App\Enums\Departments;
 use Filament\Tables\Table;
 use Filament\Forms\FormsComponent;
-use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -18,38 +27,38 @@ class ContactsRelationManager extends RelationManager
 {
     protected static string $relationship = 'contacts';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('supplier_id')
+        return $schema
+            ->components([
+                Select::make('supplier_id')
                 ->relationship('supplier', 'name')
             ->visible(fn ($livewire) => $livewire instanceof CreateSupplierContact)
                     ->required()
                     ->label('Fournisseur'),
-                Forms\Components\TextInput::make('first_name')
+                TextInput::make('first_name')
                     ->required()
                     ->maxLength(30)
                     ->label('Prénom'),
-                Forms\Components\TextInput::make('last_name')
+                TextInput::make('last_name')
                     ->required()
                     ->maxLength(30)
                     ->label('Nom'),
-                Forms\Components\TextInput::make('phone')
+                TextInput::make('phone')
                     ->tel()
                     ->maxLength(15)
                     ->label('Téléphone'),
-                Forms\Components\TextInput::make('mobile')
+                TextInput::make('mobile')
                     ->tel()
                     ->maxLength(15)
                     ->label('Mobile'),
-                Forms\Components\TextInput::make('email')
+                TextInput::make('email')
                     ->email()
                     ->required()
                     ->maxLength(100),
-                Forms\Components\Select::make('department')
+                Select::make('department')
                     ->options(Departments::class),
-                Forms\Components\MarkDownEditor::make('description')
+                MarkDownEditor::make('description')
                     ->columnSpanFull()
                 
             ]);
@@ -61,35 +70,35 @@ class ContactsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('first_name')
             ->columns([
-            Tables\Columns\TextColumn::make('first_name')
+            TextColumn::make('first_name')
                 ->searchable(),
-            Tables\Columns\TextColumn::make('last_name')
+            TextColumn::make('last_name')
                 ->searchable(),
-            Tables\Columns\TextColumn::make('phone')
+            TextColumn::make('phone')
                 ->searchable(),
-            Tables\Columns\TextColumn::make('mobile')
+            TextColumn::make('mobile')
                 ->searchable(),
-            Tables\Columns\TextColumn::make('email')
+            TextColumn::make('email')
                 ->searchable(),
-            Tables\Columns\TextColumn::make('department')
+            TextColumn::make('department')
                 ->searchable(),
             ])
             ->filters([
                 // 
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make ([
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make(), 
+                    EditAction::make(),
+                    DeleteAction::make(), 
                 ])
                 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                DeleteBulkAction::make(),
                 ]),
             ]);
     }

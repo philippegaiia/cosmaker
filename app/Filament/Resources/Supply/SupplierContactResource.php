@@ -2,15 +2,26 @@
 
 namespace App\Filament\Resources\Supply;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\MarkDownEditor;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\Supply\SupplierContactResource\Pages\ListSupplierContacts;
+use App\Filament\Resources\Supply\SupplierContactResource\Pages\CreateSupplierContact;
+use App\Filament\Resources\Supply\SupplierContactResource\Pages\EditSupplierContact;
 use Filament\Forms;
 use Filament\Tables;
-use Filament\Forms\Form;
 use App\Enums\Departments;
 //use Filament\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use App\Models\Supply\SupplierContact;
-use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\Supply\SupplierContactResource\Pages;
@@ -20,40 +31,40 @@ class SupplierContactResource extends Resource
 {
     protected static ?string $model = SupplierContact::class;
 
-    protected static ?string $navigationGroup = 'Achats';
+    protected static string | \UnitEnum | null $navigationGroup = 'Achats';
 
     protected static ?string $navigationLabel = 'Contacts Fournisseurs';
 
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-group';
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('supplier_id')
+        return $schema
+            ->components([
+                Select::make('supplier_id')
                     ->relationship('supplier', 'name')
                     ->required(),
-                Forms\Components\TextInput::make('first_name')
+                TextInput::make('first_name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('last_name')
+                TextInput::make('last_name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('phone')
+                TextInput::make('phone')
                     ->tel()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('mobile')
+                TextInput::make('mobile')
                     ->tel()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('email')
+                TextInput::make('email')
                     ->email()
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('department')
+                Select::make('department')
                     ->options(Departments::class),
-                Forms\Components\MarkDownEditor::make('description')
+                MarkDownEditor::make('description')
             ]);
     }
 
@@ -61,26 +72,26 @@ class SupplierContactResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('supplier.name')
+                TextColumn::make('supplier.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('first_name')
+                TextColumn::make('first_name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('last_name')
+                TextColumn::make('last_name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('phone')
+                TextColumn::make('phone')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('mobile')
+                TextColumn::make('mobile')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email')
+                TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('department')
+                TextColumn::make('department')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -88,16 +99,16 @@ class SupplierContactResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
+            ->recordActions([
                 ActionGroup::make([
-                     Tables\Actions\EditAction::make(),
-                     Tables\Actions\DeleteAction::make(),
+                     EditAction::make(),
+                     DeleteAction::make(),
                 ])
                
             ])
-            ->bulkActions([
-                    Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                    BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -112,9 +123,9 @@ class SupplierContactResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSupplierContacts::route('/'),
-            'create' => Pages\CreateSupplierContact::route('/create'),
-            'edit' => Pages\EditSupplierContact::route('/{record}/edit'),
+            'index' => ListSupplierContacts::route('/'),
+            'create' => CreateSupplierContact::route('/create'),
+            'edit' => EditSupplierContact::route('/{record}/edit'),
         ];
     }
 }

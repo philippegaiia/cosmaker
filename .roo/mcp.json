@@ -1,0 +1,26 @@
+{
+	"mcpServers": {
+		"laravel-boost": {
+			"command": "php",
+			"args": [
+				"artisan",
+				"boost:mcp"
+			],
+			"alwaysAllow": [
+				"application-info"
+			]
+		},
+		"herd": {
+			"command": "php",
+			"args": [
+				"/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
+			],
+			"env": {
+				"SITE_PATH": "/Users/philippe/Herd/cosmaker-1"
+			},
+			"alwaysAllow": [
+				"get_site_information"
+			]
+		}
+	}
+}
